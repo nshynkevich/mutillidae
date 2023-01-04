@@ -32,10 +32,10 @@ RUN a2enmod proxy_fcgi setenvif && \
 RUN if [ -d mutillidae ]; then rm -rf mutillidae ; fi ; \
     if [ -d "/var/www/html/mutillidae" ]; then rm -rf /var/www/html/mutillidae ; fi ; \
     mkdir -p /var/www/html/mutillidae
-COPY mutillidae/ /var/www/html/mutillidae/
-#COPY . /var/www/html/mutillidae/
+#COPY mutillidae/ /var/www/html/mutillidae/
+COPY . /var/www/html/mutillidae/
 
-RUN chown -R www-data:www-data /var/www/html/mutillidae/ && \
+RUN ls -la /var/www/html/mutillidae/ ; chown -R www-data:www-data /var/www/html/mutillidae/ && \
     groupadd -r mysql && \
     useradd -r -g mysql mysql && \
     useradd -ms /bin/bash mutillidae && \
