@@ -81,8 +81,8 @@ RUN service mysql start && \
 #COPY my_wrapper_script.sh /my_wrapper_script.sh
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-USER mutillidae
+#USER mutillidae
 
 EXPOSE 80 3306
 
-CMD ["sudo", "/usr/bin/supervisord"]
+CMD ["/usr/bin/supervisord"]
