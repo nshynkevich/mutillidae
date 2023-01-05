@@ -25,8 +25,8 @@ RUN add-apt-repository ppa:ondrej/php && \
         php8.1-mysql \
         sudo
 
-RUN a2enmod proxy_fcgi setenvif && \
-    service apache2 restart && \
+RUN a2enmod proxy_fcgi setenvif ; \
+    service apache2 restart ; \
     a2enconf php8.1-fpm
 
 RUN if [ -d mutillidae ]; then rm -rf mutillidae ; fi ; \
