@@ -48,12 +48,14 @@ RUN chown -R www-data:www-data /var/www/html/mutillidae/ && \
 #Install MySQL
 RUN echo mysql-community-server mysql-community-server/root-pass password '' | debconf-set-selections && \
     echo mysql-community-server mysql-community-server/re-root-poss password '' | debconf-set-selections && \
-    apt install -y mysql-server && \
-    mkdir -p /var/lib/mysql /var/run/mysqld /run/php && \
-    chown -R mutillidae:mysql /var/lib/mysql /var/run/mysqld && \
+    apt install -y mysql-server ; \
+    if [ ! -e /var/lib/mysql ]; then mkdir -p /var/lib/mysql ; fi ; \ 
+    if [ ! -e /var/run/mysqld ]; then mkdir -p /var/run/mysqld ; fi ; \
+    if [ ! -e /run/php ]; then mkdir -p /run/php ; fi ; \
     chmod -R 777 /var/run/ && \
     chmod -R 777 /var/log/ && \
-    chmod 770 /var/lib/mysql
+    chmod 770 /var/lib/mysql ; \
+    chown -R mysql:mysql /var/lib/mysql
 
 #RUN sed -i -e "s/localhost/$MYSQL_PORT_3306_TCP_ADDR/g" /var/www/html/mutillidae/classes/MySQLHandler.php
 RUN sed -i 's/bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf ; \
@@ -69,9 +71,9 @@ RUN sed -i "s/\$mMySQLDatabaseUsername = .*/\$mMySQLDatabaseUsername = 'root';/g
 
 #RUN check=$(wget -O - -T 2 "http://127.0.0.1:3306" 2>&1 | grep -o mariadb); while [ -z $check ]; do echo "Waiting for DB to come up..."; sleep 5s; check=$(wget -O - -T 2 "http://127.0.0.1:3306" 2>&1 | grep -o mariadb); done && \
 
-#RUN if [ ! -e /etc/sudoers.d ]; then mkdir -p /etc/sudoers.d; fi ; \
-#    echo "mutillidae: ALL = /usr/bin/supervisord" >> /etc/sudoers.d/mutillidae && \
-#    chmod 0440 /etc/sudoers.d/mutillidae 
+RUN if [ ! -e /etc/sudoers.d ]; then mkdir -p /etc/sudoers.d; fi ; \
+    echo "mutillidae ALL=(ALL) NOPASSWD: /usr/sbin/service *,/run-services.sh" >> /etc/sudoers.d/mutillidae && \
+    chmod 644 /etc/sudoers.d/mutillidae 
 
 RUN file="/etc/mysql/mysql.conf.d/mysqld.cnf"; if [ -w "$file" ]; then echo "Setting default collation to UTF-8 in $file"; sed -i -e 's/\[mysqld\]/[mysqld]\nskip-grant-tables\ncollation-server = utf8_unicode_ci\ninit-connect='\''SET NAMES utf8'\''\ncharacter-set-server = utf8\n\n/' $file;else echo "Can't write to $file. ry running the script with 'sudo'.";fi;
 
@@ -80,13 +82,21 @@ RUN service mysql start && \
     echo "update user set plugin='mysql_native_password' where user='root';" | mysql -u root -v mysql ; \
     chown -R www-data: /var/log/apache2/ ; \
     chmod -R 777 /var/log/apache2/ ; \
-    chmod -R 777 /run/php/ ; \
-    chown -R mutillidae /etc/supervisor/
+    chmod -R 777 /run/php/ 
 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+#    chown -R mutillidae /etc/supervisor/ ; \
+#    touch /supervisord.log ; \
+#    chown mutillidae: /supervisord.log ; \
+#    touch /supervisord.pid ; \
+#    chown mutillidae: /supervisord.pid
 
-#USER mutillidae
+#COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY run-services.sh /run-services.sh
+
+USER mutillidae
 
 EXPOSE 80 3306
 
-CMD ["/usr/bin/supervisord", "-u", "mutillidae"]
+#ENTRYPOINT ["/bin/bash"]
+#CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-u", "mutillidae"]
+CMD ["sudo", "/run-services.sh"]
