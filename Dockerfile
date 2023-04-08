@@ -48,7 +48,7 @@ RUN chown -R www-data:www-data /var/www/html/mutillidae/ && \
 #Install MySQL
 RUN echo mysql-community-server mysql-community-server/root-pass password '' | debconf-set-selections ; \
     echo mysql-community-server mysql-community-server/re-root-poss password '' | debconf-set-selections ; \
-    apt install -y mysql-server ; \
+    apt-get update ; apt-get install -y mysql-server ; \
     if [ ! -e /var/lib/mysql ]; then mkdir -p /var/lib/mysql ; fi ; \ 
     if [ ! -e /var/run/mysqld ]; then mkdir -p /var/run/mysqld ; fi ; \
     if [ ! -e /run/php ]; then mkdir -p /run/php ; fi ; \
