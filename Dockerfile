@@ -46,16 +46,13 @@ RUN chown -R www-data:www-data /var/www/html/mutillidae/ && \
     usermod -a -G adm mutillidae
 
 #Install MySQL
-RUN echo mysql-community-server mysql-community-server/root-pass password '' | debconf-set-selections && \
-    echo mysql-community-server mysql-community-server/re-root-poss password '' | debconf-set-selections && \
+RUN echo mysql-community-server mysql-community-server/root-pass password '' | debconf-set-selections ; \
+    echo mysql-community-server mysql-community-server/re-root-poss password '' | debconf-set-selections ; \
     apt install -y mysql-server ; \
     if [ ! -e /var/lib/mysql ]; then mkdir -p /var/lib/mysql ; fi ; \ 
     if [ ! -e /var/run/mysqld ]; then mkdir -p /var/run/mysqld ; fi ; \
     if [ ! -e /run/php ]; then mkdir -p /run/php ; fi ; \
-    chmod -R 777 /var/run/ && \
-    chmod -R 777 /var/log/ && \
-    chmod 770 /var/lib/mysql ; \
-    chown -R mysql:mysql /var/lib/mysql
+    chmod -R 777 /var/run/ ; chmod -R 777 /var/log/ ; chmod 770 /var/lib/mysql ; chown -R mysql:mysql /var/lib/mysql
 
 #RUN sed -i -e "s/localhost/$MYSQL_PORT_3306_TCP_ADDR/g" /var/www/html/mutillidae/classes/MySQLHandler.php
 RUN sed -i 's/bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf ; \
